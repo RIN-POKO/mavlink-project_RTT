@@ -699,7 +699,7 @@ land( int land_mode, float yaw, float latitude, float longitude, float altitude 
 	com.target_component = autopilot_id;
 	com.command          = MAV_CMD_NAV_LAND; 
 	com.confirmation     = false;
-	com.param1           = 0; //abort_alt	
+	com.param1           = NAN; //abort_alt	
 	com.param2           = land_mode; //land_mode
 	com.param4           = yaw; //yaw
 	com.param5 		     = latitude; //latitude

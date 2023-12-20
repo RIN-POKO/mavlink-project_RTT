@@ -47,7 +47,19 @@
  *
  */
 
-
+#define FLIGHT_MODE_MANUAL 65536
+#define FLIGHT_MODE_STABILIZED 458752
+#define FLIGHT_MODE_ACRO 327680
+#define FLIGHT_MODE_ALTITUDE 131072
+#define FLIGHT_MODE_OFFBOARD 393216
+#define FLIGHT_MODE_POITION 196608
+#define FLIGHT_MODE_HOLD 50593792
+#define FLIGHT_MODE_MISSION 67371008
+#define FLIGHT_MODE_RETURN 84148224
+#define FLIGHT_MODE_FOLLOW_ME 134479872
+#define FLIGHT_MODE_PRECISION_LAND 151257088
+#define	FLIGHT_MODE_TAKE_OFF 33816576
+#define FLIGHT_MODE_LAND 100925440
 
 // ------------------------------------------------------------------------------
 //   Includes
@@ -217,31 +229,54 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	// // SEND THE COMMAND
 
 	// takeoff
-	int flight_hight  = NAN; //[m]e
-	printf("flight_hight = 2.5 [m]\n");
-	// api.takeoff(api.current_messages.attitude.pitch, NAN, api.current_messages.global_position_int.lat, api.current_messages.global_position_int.lon, flight_hight);
-	api.takeoff(NAN, NAN,NAN,NAN,NAN);
+	float flight_hight  = 10; //[m]e
+	float ground_level = api.current_messages.highres_imu.pressure_alt;
+	float target_altitude = flight_hight + ground_level;
+	printf("flight_hight = %f [m]\n",flight_hight);
+	api.takeoff(NAN, NAN,NAN,NAN, target_altitude);
 	usleep(100 * 1000); // 100ms
-	usleep(50 * 1000 * 1000); // 50s
-
-	// land
-	// api.land(0, NAN, api.current_messages.global_position_int.lat, api.current_messages.global_position_int.lon, 0.0);
-	api.land_local(NAN, NAN, NAN, PRECISION_LAND_MODE_DISABLED, NAN);
-	// Wait until command is completed
-	while(1){
-		// copy current messages
-		Mavlink_Messages messages = api.current_messages;
-		// Command Acknowledgements
-		mavlink_command_ack_t command_ack = messages.command_ack;
-		printf("Got message COMMAND_ACK (spec: https://mavlink.io/en/messages/common.html#COMMAND_ACK)\n");
-		printf("    command: %u, progress: %u\n", command_ack.command, command_ack.progress);
-		if((MAV_CMD_NAV_LAND == command_ack.command)&&(MAV_RESULT_ACCEPTED == command_ack.result)){
-			printf("COMMAND_ACK: MAV_RESULT_ACCEPTED\n");
+	// usleep(20 * 1000 * 1000); // 100ms
+	while (true)
+	{
+		printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
+		if(FLIGHT_MODE_TAKE_OFF == api.current_messages.heartbeat.custom_mode){
+			printf("flight_mode: Takeoff\n");
 			break;
 		}
-		usleep(100 * 1000); // 100ms
+		usleep(500 * 1000); // 500ms	
 	}
-	usleep(20 * 1000 * 1000); // 50s
+	while (true)
+	{
+		printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
+		if(FLIGHT_MODE_HOLD == api.current_messages.heartbeat.custom_mode){
+			printf("flight_mode: Hold\n");
+			break;
+		}
+		usleep(500 * 1000); // 500ms	
+	}
+	
+
+	// land;
+	api.land(PRECISION_LAND_MODE_DISABLED, NAN, NAN, NAN, NAN);
+	usleep(100 * 1000); // 100ms
+	while (true)
+	{
+		printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
+		if(FLIGHT_MODE_LAND == api.current_messages.heartbeat.custom_mode){
+			printf("flight_mode: Land\n");
+			break;
+		}
+		usleep(500 * 1000); // 500ms	
+	}
+	while (true)
+	{
+		printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
+		if(FLIGHT_MODE_HOLD == api.current_messages.heartbeat.custom_mode){
+			printf("flight_mode: Hold\n");
+			break;
+		}
+		usleep(500 * 1000); // 500ms	
+	}
 
 	// disarm autopilot
 	api.arm_disarm(false);
@@ -251,7 +286,7 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	//   STOP OFFBOARD MODE
 	// --------------------------------------------------------------------------
 
-	api.disable_offboard_control();
+	// api.disable_offboard_control();
 
 	// now pixhawk isn't listening to setpoint commands
 
