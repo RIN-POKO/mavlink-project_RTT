@@ -1,5 +1,5 @@
 # takeoff_and_land
-mimiced [MAVSDK takeoff_and_land sample](https://mavsdk.mavlink.io/main/en/cpp/examples/takeoff_and_land.html) without MAVSDK library utlizing [C-UART Interface Example](https://github.com/mavlink/c_uart_interface_example)
+mimicked [MAVSDK takeoff_and_land sample](https://mavsdk.mavlink.io/main/en/cpp/examples/takeoff_and_land.html)  without MAVSDK library modifying  [C-UART Interface Example](https://github.com/mavlink/c_uart_interface_example)
 
 Building
 ========
