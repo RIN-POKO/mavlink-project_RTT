@@ -61,6 +61,9 @@
 #define	FLIGHT_MODE_TAKE_OFF 33816576
 #define FLIGHT_MODE_LAND 100925440
 
+#define ARM_STATE_ARM 189
+#define ARM_STATE_DISARM 61
+
 // ------------------------------------------------------------------------------
 //   Includes
 // ------------------------------------------------------------------------------
@@ -257,6 +260,7 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	
 
 	// land;
+	//着陸後自動的にディスアームする
 	api.land(PRECISION_LAND_MODE_DISABLED, NAN, NAN, NAN, NAN);
 	usleep(100 * 1000); // 100ms
 	while (true)
@@ -271,15 +275,14 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	while (true)
 	{
 		printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
-		if(FLIGHT_MODE_HOLD == api.current_messages.heartbeat.custom_mode){
-			printf("flight_mode: Hold\n");
+		if(ARM_STATE_DISARM == api.current_messages.heartbeat.base_mode){
+			printf("Disarm\n");
 			break;
 		}
 		usleep(500 * 1000); // 500ms	
 	}
-
-	// disarm autopilot
-	api.arm_disarm(false);
+	// // disarm autopilot
+	// api.arm_disarm(false);
 	usleep(100); // give some time to let it sink in
 
 	// --------------------------------------------------------------------------
