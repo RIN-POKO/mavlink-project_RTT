@@ -157,6 +157,8 @@ struct Time_Stamps
 	uint64_t attitude;
 	uint64_t gps_raw_int;
 	uint64_t command_ack;
+	uint64_t rtt_ack;
+
 
 	void
 	reset_timestamps()
@@ -173,6 +175,7 @@ struct Time_Stamps
 		attitude = 0;
 		gps_raw_int = 0;
 		command_ack = 0;
+		rtt_ack = 0;
 	}
 
 };
@@ -224,6 +227,9 @@ struct Mavlink_Messages {
 	// Time Stamps
 	Time_Stamps time_stamps;
 
+	// RTT Acknowledgements
+	mavlink_rtt_ack_t rtt_ack;
+
 	void
 	reset_timestamps()
 	{
@@ -266,6 +272,8 @@ public:
 	int autopilot_id;
 	int companion_id;
 
+	uint64_t offset_time;
+
 	Mavlink_Messages current_messages;
 	mavlink_set_position_target_local_ned_t initial_position;
 
@@ -291,6 +299,14 @@ public:
 	int takeoff_local( float asec_rate, float yaw, float x, float y, float z );
 	int land_local(float asec_rate, float yaw, float x, float y, float z);
 	int set_message_interval( float msg_id, float interval_us );
+
+	int send_input_gps_message( uint64_t time_usec );
+	int send_input_hil_gps_message( uint64_t time_usec );
+	int send_input_gps_raw_int_message( uint64_t time_usec );
+
+	int send_input_global_position_int_message();
+
+	int rtt_syn();
 
 
 private:
