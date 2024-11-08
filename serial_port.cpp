@@ -442,6 +442,34 @@ _setup_port(int baud, int data_bits, int stop_bits, bool parity, bool hardware_c
 				return false;
 			}
 			break;
+		case 1000000:
+			if (cfsetispeed(&config, B1000000) < 0 || cfsetospeed(&config, B1000000) < 0)
+			{
+				fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n", baud);
+				return false;
+			}
+			break;
+		case 1500000:
+			if (cfsetispeed(&config, B1500000) < 0 || cfsetospeed(&config, B1500000) < 0)
+			{
+				fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n", baud);
+				return false;
+			}
+			break;
+		case 2000000:
+			if (cfsetispeed(&config, B2000000) < 0 || cfsetospeed(&config, B2000000) < 0)
+			{
+				fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n", baud);
+				return false;
+			}
+			break;
+		case 3000000:
+			if (cfsetispeed(&config, B3000000) < 0 || cfsetospeed(&config, B3000000) < 0)
+			{
+				fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n", baud);
+				return false;
+			}
+			break;
 		default:
 			fprintf(stderr, "ERROR: Desired baud rate %d could not be set, aborting.\n", baud);
 			return false;

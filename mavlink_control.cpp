@@ -235,7 +235,7 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	time_t now = time(NULL);
 	uint64_t now64 = (uint64_t)now;
 
-	while (true)
+	for(int i = 0; i < 1000; i++)
 	{
 		api.rtt_syn();
 		usleep(1000 * 1000); // 1s 1Hz
@@ -243,10 +243,10 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 
 	// api.rtt_syn();	
 
-	// while (true)
-	// {
+	while (true)
+	{
 
-	// }
+	}
 
 	// // --------------------------------------------------------------------------
 	// //   SEND OFFBOARD COMMANDS
@@ -256,7 +256,7 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	// // // SEND THE COMMAND
 
 	// // takeoff
-	// float flight_hight  = 10; //[m]e
+	// float flight_hight  = 10; //[m]
 	// float ground_level = api.current_messages.highres_imu.pressure_alt;
 	// float target_altitude = flight_hight + ground_level;
 	// printf("flight_hight = %f [m]\n",flight_hight);

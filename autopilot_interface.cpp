@@ -218,6 +218,7 @@ Autopilot_Interface(Generic_Port *port_)
     port = port_; // port management object
 
     offset_time = get_time_usec();
+    rtt_syn_count = 0;
 
 }
 
@@ -389,7 +390,8 @@ read_messages()
                 current_messages.time_stamps.rtt_ack = get_time_usec();
                 this_timestamps.rtt_ack = current_messages.time_stamps.rtt_ack;
                 printf("RTT_ACK[us]: %llu(RTT_SYN[us]: %llu)\n", (this_timestamps.rtt_ack - offset_time), current_messages.rtt_ack.syn_send_time_usec);
-                printf("RTT[us]: %llu\n", (this_timestamps.rtt_ack - offset_time) - current_messages.rtt_ack.syn_send_time_usec);
+                // printf("RTT[us]: %llu\n", (this_timestamps.rtt_ack - offset_time) - current_messages.rtt_ack.syn_send_time_usec);
+                printf("RTT[us]: %llu, %d\n", (this_timestamps.rtt_ack - offset_time) - current_messages.rtt_ack.syn_send_time_usec, rtt_syn_count);
                 break;
             }
 
@@ -463,7 +465,8 @@ rtt_syn()
 
     mavlink_msg_rtt_syn_encode(target_system, target_component, &message, &rtt_syn);
 
-    printf("RTT_SYN[us]: %llu\n", rtt_syn.syn_send_time_usec);
+    // printf("RTT_SYN[us]: %llu\n", rtt_syn.syn_send_time_usec);
+    rtt_syn_count++;
 
     // Send the message
     int len = port->write_message(message);
@@ -1272,17 +1275,17 @@ start()
     // we need this before starting the write thread
 
 
-    // --------------------------------------------------------------------------
-    //   WRITE THREAD
-    // --------------------------------------------------------------------------
-    printf("START WRITE THREAD \n");
+    // // --------------------------------------------------------------------------
+    // //   WRITE THREAD
+    // // --------------------------------------------------------------------------
+    // printf("START WRITE THREAD \n");
 
-    result = pthread_create( &write_tid, NULL, &start_autopilot_interface_write_thread, this );
-    if ( result ) throw result;
+    // result = pthread_create( &write_tid, NULL, &start_autopilot_interface_write_thread, this );
+    // if ( result ) throw result;
 
-    // wait for it to be started
-    while ( not writing_status )
-        usleep(100000); // 10Hz
+    // // wait for it to be started
+    // while ( not writing_status )
+    //     usleep(100000); // 10Hz
 
     // now we're streaming setpoint commands
     printf("\n");

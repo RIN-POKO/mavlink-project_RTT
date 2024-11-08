@@ -274,6 +274,8 @@ public:
 
 	uint64_t offset_time;
 
+	int rtt_syn_count;
+
 	Mavlink_Messages current_messages;
 	mavlink_set_position_target_local_ned_t initial_position;
 
