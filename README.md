@@ -1,5 +1,4 @@
-# takeoff_and_land
-mimicked [MAVSDK takeoff_and_land sample](https://mavsdk.mavlink.io/main/en/cpp/examples/takeoff_and_land.html)  without MAVSDK library modifying  [C-UART Interface Example](https://github.com/mavlink/c_uart_interface_example)
+# Measurement RTT
 
 Building
 ========
@@ -39,18 +38,8 @@ The Pixhawk USB port will show up on a `ttyACM*`, an FTDI cable will show up on 
 Run the example executable on the host shell:
 
 ```
-$ ./mavlink_control -d /dev/ttyACM0
+$ ./mavlink_control -d /dev/ttyACM0 -b 57600 -a -f 1000
+# usage: mavlink_control [-d <devicename> -b <baudrate>] [-u <udp_ip> -p <udp_port>] [-a ] [-f <syn_frequency>]
 ```
 
 To stop the program, use the key sequence `Ctrl-C`.
-
-
-Simulation
-===========
-
-There is also the possibility to connect this example to the simulator using:
-
-```
-$ ./mavlink_control -u 127.0.0.1 -a
-```
-The -a argument enables arming, takeoff and landing of the copter. Use this argument with care on a real copter!

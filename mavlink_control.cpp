@@ -94,10 +94,11 @@ top (int argc, char **argv)
 	char *udp_ip = (char*)"127.0.0.1";
 	int udp_port = 14540;
 	bool autotakeoff = false;
+	int syn_frequency = 1;
 
 	// do the parse, will throw an int if it fails
-	parse_commandline(argc, argv, uart_name, baudrate, use_udp, udp_ip, udp_port, autotakeoff);
-
+	parse_commandline(argc, argv, uart_name, baudrate, use_udp, udp_ip, udp_port, autotakeoff, syn_frequency);
+	printf("RTT measurement SYN frequency: %d [Hz]\n", syn_frequency);
 
 	// --------------------------------------------------------------------------
 	//   PORT and THREAD STARTUP
@@ -164,7 +165,7 @@ top (int argc, char **argv)
 	/*
 	 * Now we can implement the algorithm we want on top of the autopilot interface
 	 */
-	commands(autopilot_interface, autotakeoff);
+	commands(autopilot_interface, autotakeoff, syn_frequency);
 
 
 	// --------------------------------------------------------------------------
@@ -194,7 +195,7 @@ top (int argc, char **argv)
 // ------------------------------------------------------------------------------
 
 void
-commands(Autopilot_Interface &api, bool autotakeoff)
+commands(Autopilot_Interface &api, bool autotakeoff, int syn_frequency)
 {
 
 
@@ -207,15 +208,6 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	usleep(100); // 100us
 
 	usleep(2 * 1000 * 1000); // 2s
-	// --------------------------------------------------------------------------
-	//   START OFFBOARD MODE
-	// --------------------------------------------------------------------------
-
-	// api.enable_offboard_control();
-	// usleep(100); // give some time to let it sink in
-
-	// now the autopilot is accepting setpoint commands
-
 
 	if(autotakeoff)
 	{
@@ -230,124 +222,13 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 	printf("Got message LOCAL_POSITION_NED (spec: https://mavlink.io/en/messages/common.html#LOCAL_POSITION_NED)\n");
 	printf("    pos  (NED):  %f %f %f (m)\n", pos.x, pos.y, pos.z );
 
-	// hires imu
-	mavlink_highres_imu_t imu = messages.highres_imu;
-	time_t now = time(NULL);
-	uint64_t now64 = (uint64_t)now;
-
 	for(int i = 0; i < 1000; i++)
 	{
 		api.rtt_syn();
-		usleep(1000 * 1000); // 1s 1Hz
+		usleep((1000 * 1000)/syn_frequency); // 1s 1Hz
 	}
 
-	// api.rtt_syn();	
-
-	while (true)
-	{
-
-	}
-
-	// // --------------------------------------------------------------------------
-	// //   SEND OFFBOARD COMMANDS
-	// // --------------------------------------------------------------------------
-	// printf("SEND OFFBOARD COMMANDS\n");
-
-	// // // SEND THE COMMAND
-
-	// // takeoff
-	// float flight_hight  = 10; //[m]
-	// float ground_level = api.current_messages.highres_imu.pressure_alt;
-	// float target_altitude = flight_hight + ground_level;
-	// printf("flight_hight = %f [m]\n",flight_hight);
-	// api.takeoff(NAN, NAN,NAN,NAN, target_altitude);
-	// usleep(100 * 1000); // 100ms
-	// // usleep(20 * 1000 * 1000); // 100ms
-	// while (true)
-	// {
-	// 	printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
-	// 	if(FLIGHT_MODE_TAKE_OFF == api.current_messages.heartbeat.custom_mode){
-	// 		printf("flight_mode: Takeoff\n");
-	// 		break;
-	// 	}
-	// 	usleep(500 * 1000); // 500ms	
-	// }
-	// while (true)
-	// {
-	// 	printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
-	// 	if(FLIGHT_MODE_HOLD == api.current_messages.heartbeat.custom_mode){
-	// 		printf("flight_mode: Hold\n");
-	// 		break;
-	// 	}
-	// 	usleep(500 * 1000); // 500ms	
-	// }
-	
-
-	// // land;
-	// //着陸後自動的にディスアームする
-	// api.land(PRECISION_LAND_MODE_DISABLED, NAN, NAN, NAN, NAN);
-	// usleep(100 * 1000); // 100ms
-	// while (true)
-	// {
-	// 	printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
-	// 	if(FLIGHT_MODE_LAND == api.current_messages.heartbeat.custom_mode){
-	// 		printf("flight_mode: Land\n");
-	// 		break;
-	// 	}
-	// 	usleep(500 * 1000); // 500ms	
-	// }
-	// while (true)
-	// {
-	// 	printf("flight hight: %f [m]\n", api.current_messages.highres_imu.pressure_alt - ground_level);
-	// 	if(ARM_STATE_DISARM == api.current_messages.heartbeat.base_mode){
-	// 		printf("Disarm\n");
-	// 		break;
-	// 	}
-	// 	usleep(500 * 1000); // 500ms	
-	// }
-	// // // disarm autopilot
-	// // api.arm_disarm(false);
-	// usleep(100); // give some time to let it sink in
-
-	// // --------------------------------------------------------------------------
-	// //   STOP OFFBOARD MODE
-	// // --------------------------------------------------------------------------
-
-	// // api.disable_offboard_control();
-
-	// // now pixhawk isn't listening to setpoint commands
-
-
-	// // --------------------------------------------------------------------------
-	// //   GET A MESSAGE
-	// // --------------------------------------------------------------------------
-	// printf("READ SOME MESSAGES \n");
-
-	// // copy current messages
-	// Mavlink_Messages messages = api.current_messages;
-
-	// // local position in ned frame
-	// mavlink_local_position_ned_t pos = messages.local_position_ned;
-	// printf("Got message LOCAL_POSITION_NED (spec: https://mavlink.io/en/messages/common.html#LOCAL_POSITION_NED)\n");
-	// printf("    pos  (NED):  %f %f %f (m)\n", pos.x, pos.y, pos.z );
-
-	// // hires imu
-	// mavlink_highres_imu_t imu = messages.highres_imu;
-	// printf("Got message HIGHRES_IMU (spec: https://mavlink.io/en/messages/common.html#HIGHRES_IMU)\n");
-	// printf("    ap time:     %lu \n", imu.time_usec);
-	// printf("    acc  (NED):  % f % f % f (m/s^2)\n", imu.xacc , imu.yacc , imu.zacc );
-	// printf("    gyro (NED):  % f % f % f (rad/s)\n", imu.xgyro, imu.ygyro, imu.zgyro);
-	// printf("    mag  (NED):  % f % f % f (Ga)\n"   , imu.xmag , imu.ymag , imu.zmag );
-	// printf("    baro:        %f (mBar) \n"  , imu.abs_pressure);
-	// printf("    altitude:    %f (m) \n"     , imu.pressure_alt);
-	// printf("    temperature: %f C \n"       , imu.temperature );
-
-	// printf("\n");
-
-
-	// --------------------------------------------------------------------------
-	//   END OF COMMANDS
-	// --------------------------------------------------------------------------
+	while (true){}
 
 	return;
 
@@ -360,11 +241,11 @@ commands(Autopilot_Interface &api, bool autotakeoff)
 // throws EXIT_FAILURE if could not open the port
 void
 parse_commandline(int argc, char **argv, char *&uart_name, int &baudrate,
-		bool &use_udp, char *&udp_ip, int &udp_port, bool &autotakeoff)
+		bool &use_udp, char *&udp_ip, int &udp_port, bool &autotakeoff, int &syn_frequency)
 {
 
 	// string for command line usage
-	const char *commandline_usage = "usage: mavlink_control [-d <devicename> -b <baudrate>] [-u <udp_ip> -p <udp_port>] [-a ]";
+	const char *commandline_usage = "usage: mavlink_control [-d <devicename> -b <baudrate>] [-u <udp_ip> -p <udp_port>] [-a ] [-f <syn_frequency>]";
 
 	// Read input arguments
 	for (int i = 1; i < argc; i++) { // argv[0] is "mavlink"
@@ -423,6 +304,17 @@ parse_commandline(int argc, char **argv, char *&uart_name, int &baudrate,
 		// Autotakeoff
 		if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--autotakeoff") == 0) {
 			autotakeoff = true;
+		}
+
+		// Send frequency
+		if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--syn_frequency") == 0) {
+			if (argc > i + 1) {
+				i++;
+				syn_frequency = atoi(argv[i]);
+			} else {
+				printf("%s\n",commandline_usage);
+				throw EXIT_FAILURE;
+			}
 		}
 
 	}
